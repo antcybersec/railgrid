@@ -1121,12 +1121,14 @@ e2e-edges: build-hub build-edges-provider ## Run edges provider e2e suite
 ## registers a KubernetesCluster, enables edges + the edge-proxy grant, runs the
 ## agent, and streams `kubectl get nodes` down the tunnel (agent -> hub backend
 ## proxy -> out-of-process edges provider -> agent -> kind API server). Needs
-## kind + docker + kubectl on PATH. Shares embedded-kcp etcd port 2380 — do not
-## run concurrently with the other subprocess suites.
+## kind + docker + kubectl on PATH. Also runs kuery-provider against the same
+## engaged edge to prove fleet aggregation (TestKueryAggregatesEdgeObjects).
+## Shares embedded-kcp etcd port 2380 — do not run concurrently with the other
+## subprocess suites.
 E2E_EDGES_CONN_TIMEOUT ?= 15m
-e2e-edges-connectivity: build-hub build-edges-provider build-railgrid certs ## Run edges data-plane connectivity e2e (needs kind)
-	@test -z "$$(lsof -ti :19473 :16473 :18098 :2380 2>/dev/null)" || { \
-		echo "ports 19473/16473/18098/2380 are in use; stop any running railgrid-hub/edges-provider first"; \
+e2e-edges-connectivity: build-hub build-edges-provider build-kuery-provider build-railgrid certs ## Run edges data-plane connectivity e2e (needs kind)
+	@test -z "$$(lsof -ti :19473 :16473 :18098 :18099 :2380 2>/dev/null)" || { \
+		echo "ports 19473/16473/18098/18099/2380 are in use; stop any running railgrid-hub/edges-provider first"; \
 		exit 1; \
 	}
 	go test ./test/e2e/suites/edgesconn/... -v -timeout $(E2E_EDGES_CONN_TIMEOUT) $(if $(E2E_FLAGS),-args $(E2E_FLAGS))
