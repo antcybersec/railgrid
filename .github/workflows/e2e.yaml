@@ -98,6 +98,12 @@ jobs:
       - name: Run kuery provider e2e
         run: make e2e-kuery-provider
 
+      # Added in #769 with a working target and no CI caller — the coverage
+      # guard in this PR caught it. Shares etcd :2380, so it runs here in the
+      # sequential job rather than as its own.
+      - name: Run hub scoped-identity e2e
+        run: make e2e-identity
+
       - name: Run edges provider e2e
         run: make e2e-edges
 
